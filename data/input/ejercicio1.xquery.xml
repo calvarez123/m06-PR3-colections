@@ -1,3 +1,12 @@
 <posts>
+  <post Title="Why does monte carlo ray tracing perform better than distributed ray tracing?">14607</post>
+  <post Title="Performance of vector graphics versus bitmap or raster graphics">3804</post>
+  <post Title="Is there any way to generate primitives in a geometry shader without any input geometry?">2288</post>
+  <post Title="Is it possible to find out how many fragments made it through the stencil test?">856</post>
+  <post Title="Is modifying a texture (painting on it) considered a &quot;state change&quot;?">772</post>
+  <post Title="Is a cubic Lagrange interpolation tensor product the same as bicubic interpolation?">752</post>
   <post Title="What transformations should I apply to a model to produce this 3D effect?">270</post>
+  <post/>
+  <post/>
+  <post/>
 </posts>
