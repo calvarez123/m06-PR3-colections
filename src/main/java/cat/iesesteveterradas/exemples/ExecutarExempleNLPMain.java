@@ -1,5 +1,6 @@
 package cat.iesesteveterradas.exemples;
 
+import java.io.File;
 import org.basex.api.client.ClientSession;
 import org.basex.core.BaseXException;
 import org.basex.core.cmd.Open;
@@ -22,54 +23,37 @@ import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-/*
-
-<topTitles>
-{
-    let $topTitles :=
-        for $question in //row
-        let $views := xs:integer($question/@ViewCount)
-        order by $views descending
-        return $question/(@Title)[1]
-    return subsequence($topTitles, 1, 100)
-}
-</topTitles>
-
-*/
 
 
 public class ExecutarExempleNLPMain {
     private static final Logger logger = LoggerFactory.getLogger(ExecutarExempleNLPMain.class);
 
     public static void main(String[] args) throws Exception {
-        // Initialize connection details
         String host = "127.0.0.1";
         int port = 1984;
         String username = "admin"; // Default username
         String password = "admin"; // Default password
-        String result = " ";
-        // Establish a connection to the BaseX server
-        
+        String text = "s";
+        FileWriter writer = null;
+
         try (ClientSession session = new ClientSession(host, port, username, password)) {
             logger.info("Connected to BaseX server.");
 
             session.execute(new Open("bdComputers"));
 
             // Path to the directory containing .query files
-            String directoryPath = "data/nlp";
+            String directoryPath = "data/ejercicio3";
             File directory = new File(directoryPath);
-            
 
             // Ensure the directory exists and is a directory
             if (directory.exists() && directory.isDirectory()) {
@@ -84,13 +68,14 @@ public class ExecutarExempleNLPMain {
                             String query = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
 
                             // Execute the query
-                            result = session.execute(new XQuery(query));
+                            String result = session.execute(new XQuery(query));
 
-                            // Create a new file with the result
-                
-
+                      
+                          
+                            text = result;
+                            logger.info("Created XML file with result for file {}: {}");
                         } catch (IOException e) {
-                            logger.error("Error reading file {}: {}", file.getName(), e.getMessage());
+                            logger.error("Error reading file {}: {}");
                         }
 
                     }
@@ -103,8 +88,8 @@ public class ExecutarExempleNLPMain {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-        String text = result;
-
+        System.out.println(text);
+        System.out.println("empezamos------------------");
         String basePath = System.getProperty("user.dir") + "/data/models/";
 
         // Updated paths for the provided model files
@@ -112,7 +97,9 @@ public class ExecutarExempleNLPMain {
         InputStream modelInToken = new FileInputStream(basePath + "opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
         InputStream modelInPOS = new FileInputStream(basePath + "en-pos-maxent.bin");
         InputStream modelInPerson = new FileInputStream(basePath + "en-ner-person.bin");
-
+        String outputFileName = "data/input/resultado.txt";
+                    File outputFile = new File(outputFileName);
+                    writer = new FileWriter(outputFile);
         // Sentence detection
         SentenceModel modelSentence = new SentenceModel(modelInSentence);
         SentenceDetectorME sentenceDetector = new SentenceDetectorME(modelSentence);
@@ -195,12 +182,26 @@ public class ExecutarExempleNLPMain {
                 // Comprova si el token és una entitat anomenada (NER)
                 if (!"O".equals(ner)) { // Ignora els tokens que no són entitats (etiquetats com 'O')
                     logger.info("Entity Detected: " + word + " - Entity Type: " + ner);
+                    String texto = "Entity Detected: " + word + " - Entity Type: " + ner +"\n";
+                    // Create a new file with the result
+                    
+                    writer.write(texto);
+              
+                   
+                    
                 }
             }
 
             // Anàlisi de sentiments
             String sentiment = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
             logger.info("Sentiment: " + sentiment);
-        }        
+        }     
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                logger.error("Error closing writer: {}", e.getMessage());
+            }
+        }   
     }
 }

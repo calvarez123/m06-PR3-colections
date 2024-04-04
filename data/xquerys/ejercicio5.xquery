@@ -1,28 +1,34 @@
 declare option output:method "xml";
 declare option output:indent "yes";
 
-let $top_questions :=
-    for $row in /rows[@PostTypeId = "1"]
-    order by xs:integer($row/@Score) descending
-    return $row[position() <= 10]
+let $topQuestions :=
+  for $question in /posts/row[@PostTypeId = 1]
+  let $topScore := max(for $score in $question/@Score return xs:integer($score))
+  where xs:integer($question/@Score) = $topScore
+  return $question
 
-let $result :=
-    for $question in $top_questions
-    let $top_answer := 
-        for $answer in /rows[@PostTypeId = "2" and @ParentId = $question/@Id]
-        order by xs:integer($answer/@Score) descending
-        return $answer[1]
-    return (
-        <question>
-            <title>{$question/@Title}</title>
-            <body>{$question/@Body}</body>
-            <score>{$question/@Score}</score>
-            <tags>{$question/@Tags}</tags>
-            <top_answer>
-                <body>{$top_answer/@Body}</body>
-                <score>{$top_answer/@Score}</score>
-            </top_answer>
-        </question>
-    )
+for $question in $topQuestions
+let $answers := /posts/row[@PostTypeId = 2 and @ParentId = $question/@Id]
+let $topScore := max(for $score in $answers/@Score return xs:integer($score))
+let $topAnswer :=
+  if (empty($answers))
+  then ()
+  else $answers[$topScore = xs:integer(@Score)][1]
 
-return $result
+return
+  <question>
+    <title>{string($question/@Title)}</title>
+    <body>{data($question/@Body)}</body>
+    <score>{string($topScore)}</score>
+    <tags>{string($question/@Tags)}</tags>
+    {
+      if (exists($topAnswer))
+      then
+        <top_answer>
+          <body>{data($topAnswer/@Body)}</body>
+          <score>{string($topAnswer/@Score)}</score>
+          <vote_count>{string($topAnswer/@Score)}</vote_count>
+        </top_answer>
+      else ()
+    }
+  </question>

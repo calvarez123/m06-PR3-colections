@@ -54,6 +54,7 @@ public class Main {
                             File outputFile = new File(outputFileName);
                             FileWriter writer = new FileWriter(outputFile);
                             writer.write(result);
+                            System.out.println(result);
                             writer.close();
 
                             logger.info("Created XML file with result for file {}: {}", file.getName(), outputFileName);
